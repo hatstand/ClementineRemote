@@ -1,0 +1,7 @@
+com.strangeberry.jmdns.tools
+javax.jmdns
+javax.jmdns.impl
+javax.jmdns.impl.constants
+javax.jmdns.impl.tasks
+javax.jmdns.impl.tasks.resolver
+javax.jmdns.impl.tasks.state
