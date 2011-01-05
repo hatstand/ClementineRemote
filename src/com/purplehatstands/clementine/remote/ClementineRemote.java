@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
@@ -22,33 +24,66 @@ import org.json.JSONTokener;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.http.AndroidHttpClient;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ListView;
 import android.widget.TextView;
 
 public class ClementineRemote extends Activity implements ServiceListener, ResponseHandler<String> {
 	private static final String TAG = "ClementineRemote";
 	
+	static final int ADD_SERVER_REQUEST = 0;
+	
     private MulticastLock lock_;
-    private TextView tv_;
     private JmDNS mdns_ = null;
     private WifiManager wifi_;
+    private ServerListAdapter servers_;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        tv_ = new TextView(this);
-        tv_.setText("Hello, World!");
-        setContentView(tv_);
+        setContentView(R.layout.main);
+        
+        servers_ = new ServerListAdapter(this);
+        
+        ListView listview = (ListView) findViewById(R.id.servers);
+
+        final TextView button = new TextView(this);
+        final Context context = this;
+        button.setText("Add server");
+        button.setHeight(50);
+        button.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				Log.d(TAG, "clicked");
+				startActivityForResult(new Intent(context, AddServerActivity.class), ADD_SERVER_REQUEST);
+			}
+		});
+
+        listview.addHeaderView(button);
+        listview.setAdapter(servers_);
         
         wifi_ = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         lock_ = wifi_.createMulticastLock("fliing_lock");
         lock_.setReferenceCounted(true);
+    }
+    
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    	if (requestCode != ADD_SERVER_REQUEST) {
+    		return;
+    	}
+
+    	if (resultCode == RESULT_OK) {
+    		Bundle extras = data.getExtras();
+    		Server server = (Server) extras.get(Server.class.getName());
+    		servers_.addServer(server);
+    	}
     }
     
     @Override
@@ -91,15 +126,16 @@ public class ClementineRemote extends Activity implements ServiceListener, Respo
 		String address = info.getHostAddress();
 		int port = info.getPort();
 		
+		servers_.addServer(new Server(address, address, port));
+		
 		AndroidHttpClient http = AndroidHttpClient.newInstance("Clementine Remote");
 		try {
 			String response = http.execute(new HttpHost(address, port), new HttpGet("/"), this);
 			JSONTokener tokener = new JSONTokener(response);
 			JSONObject object;
 			object = (JSONObject)tokener.nextValue();
-			String content = object.getString("content");
+			String content = object.getString("song");
 			Log.d(TAG, "Json:" + content);
-			tv_.setText(content);
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -2,4 +2,10 @@
 <resources>
     <string name="hello">Hello World, ClementineRemote!</string>
     <string name="app_name">Clementine Remote</string>
+<string name="ok">OK</string>
+<string name="cancel">Cancel</string>
+<string name="add_server">Add Server</string>
+<string name="server_name_hint">Server name</string>
+<string name="address_hint">Host or IP</string>
+<string name="port_hint">12345</string>
 </resources>
