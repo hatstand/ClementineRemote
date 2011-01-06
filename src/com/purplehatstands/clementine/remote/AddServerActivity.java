@@ -1,8 +1,5 @@
 package com.purplehatstands.clementine.remote;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
