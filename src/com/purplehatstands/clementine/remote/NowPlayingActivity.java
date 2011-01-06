@@ -31,6 +31,8 @@ import android.widget.TextView;
 public class NowPlayingActivity extends Activity {
 	private static final String TAG = "NowPlayingActivity";
 	TextView track_;
+	TextView artist_;
+	TextView album_;
 	ImageView album_cover_;
 	
 	private class JsonFetcher extends AsyncTask<Server, Integer, JSONObject> implements ResponseHandler<String> {
@@ -64,6 +66,8 @@ public class NowPlayingActivity extends Activity {
 			try {
 				JSONObject song = json.getJSONObject("song");
 				track_.setText(song.getString("title"));
+				artist_.setText(song.getString("artist"));
+				album_.setText(song.getString("album"));
 				
 				String base64_cover = song.getString("cover");
 				byte[] cover_data = Base64.decode(base64_cover, 0);
@@ -93,6 +97,8 @@ public class NowPlayingActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.now_playing);
 		track_ = (TextView) findViewById(R.id.track);
+		artist_ = (TextView) findViewById(R.id.artist);
+		album_ = (TextView) findViewById(R.id.album);
 		album_cover_ = (ImageView) findViewById(R.id.album_cover);
 		
 		Intent intent = getIntent();

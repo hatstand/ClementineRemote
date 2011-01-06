@@ -1,7 +1,7 @@
-<LinearLayout android:id="@+id/LinearLayout01" android:layout_width="fill_parent" android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android">
-	<ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/album_cover"></ImageView><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/track" android:text="Artist"></TextView>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/LinearLayout01" android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent">
+	<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/track" android:text="Track" android:textStyle="italic"></TextView>
+	<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/artist" android:text="Artist"></TextView>
+	<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/album" android:text="Album"></TextView>
+	<ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/album_cover"></ImageView>
 	
-
-
-
 </LinearLayout>
