@@ -9,8 +9,11 @@ import android.content.SharedPreferences.Editor;
 import android.database.DataSetObserver;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.AbsListView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
@@ -109,6 +112,8 @@ public class ServerListAdapter implements ListAdapter {
 			final Server server = (Server) getItem(position);
 			view.setText(server.getName());
 			view.setPadding(0, 2, 0, 3);
+			view.setClickable(true);
+			view.setBackgroundResource(android.R.drawable.list_selector_background);
 			view.setOnClickListener(new View.OnClickListener() {	
 				public void onClick(View v) {
 					Intent intent = new Intent(context_, NowPlayingActivity.class);

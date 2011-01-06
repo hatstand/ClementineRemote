@@ -25,12 +25,15 @@ import org.json.JSONTokener;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.net.http.AndroidHttpClient;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -59,6 +62,10 @@ public class ClementineRemote extends Activity implements ServiceListener, Respo
         final Context context = this;
         button.setText("Add server");
         button.setHeight(50);
+        button.setTextSize(30);
+        button.setTextColor(Color.WHITE);
+        button.setBackgroundResource(android.R.drawable.list_selector_background);
+        button.setGravity(Gravity.FILL_HORIZONTAL);
         button.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				Log.d(TAG, "clicked");

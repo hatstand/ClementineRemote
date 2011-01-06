@@ -26,6 +26,8 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.MediaController;
+import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
 
 public class NowPlayingActivity extends Activity {
@@ -34,6 +36,7 @@ public class NowPlayingActivity extends Activity {
 	TextView artist_;
 	TextView album_;
 	ImageView album_cover_;
+	MediaController controls_;
 	
 	private class JsonFetcher extends AsyncTask<Server, Integer, JSONObject> implements ResponseHandler<String> {
 
@@ -57,6 +60,8 @@ public class NowPlayingActivity extends Activity {
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} finally {
+				http.close();
 			}
 			return new JSONObject();
 		}
@@ -101,12 +106,71 @@ public class NowPlayingActivity extends Activity {
 		album_ = (TextView) findViewById(R.id.album);
 		album_cover_ = (ImageView) findViewById(R.id.album_cover);
 		
+		controls_ = new MediaController(this);
+		controls_.setAnchorView(findViewById(R.id.now_playing_layout));
+		controls_.setMediaPlayer(new Controls());
+		controls_.setEnabled(true);
+		
 		Intent intent = getIntent();
 		Server server = (Server) intent.getExtras().get("server");
 		
 		new JsonFetcher().execute(server);
 	}
 
+	
+	private static class Controls implements MediaPlayerControl {
+
+		public boolean canPause() {
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+		public boolean canSeekBackward() {
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+		public boolean canSeekForward() {
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+		public int getBufferPercentage() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		public int getCurrentPosition() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		public int getDuration() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		public boolean isPlaying() {
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+		public void pause() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void seekTo(int pos) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void start() {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
 	
 
 }
