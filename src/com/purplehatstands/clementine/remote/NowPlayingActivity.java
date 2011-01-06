@@ -17,15 +17,21 @@ import org.json.JSONTokener;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class NowPlayingActivity extends Activity {
 	private static final String TAG = "NowPlayingActivity";
 	TextView track_;
+	ImageView album_cover_;
 	
 	private class JsonFetcher extends AsyncTask<Server, Integer, JSONObject> implements ResponseHandler<String> {
 
@@ -57,8 +63,11 @@ public class NowPlayingActivity extends Activity {
 		protected void onPostExecute(JSONObject json) {
 			try {
 				JSONObject song = json.getJSONObject("song");
-				TextView track = (TextView) findViewById(R.id.track);
-				track.setText(song.getString("title"));
+				track_.setText(song.getString("title"));
+				
+				String base64_cover = song.getString("cover");
+				byte[] cover_data = Base64.decode(base64_cover, 0);
+				album_cover_.setImageBitmap(BitmapFactory.decodeByteArray(cover_data, 0, cover_data.length));
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -84,6 +93,7 @@ public class NowPlayingActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.now_playing);
 		track_ = (TextView) findViewById(R.id.track);
+		album_cover_ = (ImageView) findViewById(R.id.album_cover);
 		
 		Intent intent = getIntent();
 		Server server = (Server) intent.getExtras().get("server");
