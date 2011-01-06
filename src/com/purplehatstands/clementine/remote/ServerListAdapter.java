@@ -106,11 +106,14 @@ public class ServerListAdapter implements ListAdapter {
 		} else if (position == stored_servers_.size() + 1) {
 			view.setText("Detected servers:");
 		} else {
-			view.setText(((Server)getItem(position)).getName());
+			final Server server = (Server) getItem(position);
+			view.setText(server.getName());
 			view.setPadding(0, 2, 0, 3);
 			view.setOnClickListener(new View.OnClickListener() {	
 				public void onClick(View v) {
-					context_.startActivity(new Intent());
+					Intent intent = new Intent(context_, NowPlayingActivity.class);
+					intent.putExtra("server", server);
+					context_.startActivity(intent);
 				}
 			});
 		}
