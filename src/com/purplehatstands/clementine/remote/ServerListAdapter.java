@@ -2,18 +2,21 @@ package com.purplehatstands.clementine.remote;
 
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.DataSetObserver;
 import android.util.Log;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AbsListView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
@@ -24,15 +27,17 @@ public class ServerListAdapter implements ListAdapter {
 	private ArrayList<Server> detected_servers_;
 	private ArrayList<Server> stored_servers_;
 	
-	private Context context_;
+	private ArrayList<DataSetObserver> observers_ = new ArrayList<DataSetObserver>();
+	
+	private Activity activity_;
 	private SharedPreferences prefs_;
 	
-	public ServerListAdapter(Context context) {
-		context_ = context;
+	public ServerListAdapter(Activity activity) {
+		activity_ = activity;
 		stored_servers_ = new ArrayList<Server>();
 		detected_servers_ = new ArrayList<Server>();
 		
-		prefs_ = context_.getSharedPreferences(SERVER_PREFS, 0);
+		prefs_ = activity_.getSharedPreferences(SERVER_PREFS, 0);
 		Log.d(TAG, "Loading preferences...");
 		String stored_servers = prefs_.getString("stored_servers", null);
 		
@@ -57,7 +62,30 @@ public class ServerListAdapter implements ListAdapter {
 	
 	public void addServer(Server server) {
 		stored_servers_.add(server);
-
+		notifyObservers();
+		storeServers();
+	}
+	
+	public void removeServer(Server server) {
+		stored_servers_.remove(server);
+		notifyObservers();
+		storeServers();
+	}
+	
+	public void removeServer(int position) {
+		Server s = (Server) getItem(position);
+		if (s != null) {
+			removeServer(s);
+		}
+	}
+	
+	private void notifyObservers() {
+		for (DataSetObserver observer : observers_) {
+			observer.onChanged();
+		}
+	}
+	
+	private void storeServers() {
 		StringBuilder builder = new StringBuilder();
 		for (Server s : stored_servers_) {
 			builder.append(s.getName());
@@ -95,11 +123,11 @@ public class ServerListAdapter implements ListAdapter {
 
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// Use the default list item style.
-		LayoutInflater inflater = (LayoutInflater)context_.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		LayoutInflater inflater = (LayoutInflater)activity_.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
 		TextView view;
 		if (getItem(position) == null) {
-			view = new TextView(context_);
+			view = new TextView(activity_);
 		} else {
 			view = (TextView) inflater.inflate(android.R.layout.simple_list_item_1, null);
 		}
@@ -116,11 +144,12 @@ public class ServerListAdapter implements ListAdapter {
 			view.setBackgroundResource(android.R.drawable.list_selector_background);
 			view.setOnClickListener(new View.OnClickListener() {	
 				public void onClick(View v) {
-					Intent intent = new Intent(context_, NowPlayingActivity.class);
+					Intent intent = new Intent(activity_, NowPlayingActivity.class);
 					intent.putExtra("server", server);
-					context_.startActivity(intent);
+					activity_.startActivity(intent);
 				}
 			});
+			activity_.registerForContextMenu(view);
 		}
 		return view;
 	}
@@ -141,13 +170,11 @@ public class ServerListAdapter implements ListAdapter {
 	}
 
 	public void registerDataSetObserver(DataSetObserver observer) {
-		// TODO Auto-generated method stub
-
+		observers_.add(observer);
 	}
 
 	public void unregisterDataSetObserver(DataSetObserver observer) {
-		// TODO Auto-generated method stub
-
+		observers_.remove(observer);
 	}
 
 	public boolean areAllItemsEnabled() {

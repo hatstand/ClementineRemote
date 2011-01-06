@@ -17,6 +17,7 @@ import org.json.JSONTokener;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -37,6 +38,7 @@ public class NowPlayingActivity extends Activity {
 	TextView album_;
 	ImageView album_cover_;
 	MediaController controls_;
+	JSONObject current_status_;
 	
 	private class JsonFetcher extends AsyncTask<Server, Integer, JSONObject> implements ResponseHandler<String> {
 
@@ -68,19 +70,7 @@ public class NowPlayingActivity extends Activity {
 		
 		@Override
 		protected void onPostExecute(JSONObject json) {
-			try {
-				JSONObject song = json.getJSONObject("song");
-				track_.setText(song.getString("title"));
-				artist_.setText(song.getString("artist"));
-				album_.setText(song.getString("album"));
-				
-				String base64_cover = song.getString("cover");
-				byte[] cover_data = Base64.decode(base64_cover, 0);
-				album_cover_.setImageBitmap(BitmapFactory.decodeByteArray(cover_data, 0, cover_data.length));
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			UpdateStatus(json);
 		}
 		
 		public String handleResponse(HttpResponse response)
@@ -100,6 +90,24 @@ public class NowPlayingActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		InitialiseUI();
+		
+		Intent intent = getIntent();
+		Server server = (Server) intent.getExtras().get("server");
+		
+		new JsonFetcher().execute(server);
+	}
+	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		InitialiseUI();
+		if (current_status_ != null) {
+			UpdateStatus(current_status_);
+		}
+	}
+	
+	private void InitialiseUI() {
 		setContentView(R.layout.now_playing);
 		track_ = (TextView) findViewById(R.id.track);
 		artist_ = (TextView) findViewById(R.id.artist);
@@ -110,11 +118,24 @@ public class NowPlayingActivity extends Activity {
 		controls_.setAnchorView(findViewById(R.id.now_playing_layout));
 		controls_.setMediaPlayer(new Controls());
 		controls_.setEnabled(true);
-		
-		Intent intent = getIntent();
-		Server server = (Server) intent.getExtras().get("server");
-		
-		new JsonFetcher().execute(server);
+	}
+	
+	private void UpdateStatus(JSONObject json) {
+		current_status_ = json;
+		JSONObject song;
+		try {
+			song = json.getJSONObject("song");
+			track_.setText(song.getString("title"));
+			artist_.setText(song.getString("artist"));
+			album_.setText(song.getString("album"));
+			
+			String base64_cover = song.getString("cover");
+			byte[] cover_data = Base64.decode(base64_cover, 0);
+			album_cover_.setImageBitmap(BitmapFactory.decodeByteArray(cover_data, 0, cover_data.length));
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	

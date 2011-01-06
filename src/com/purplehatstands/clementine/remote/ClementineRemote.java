@@ -33,8 +33,13 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Gravity;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -121,6 +126,19 @@ public class ClementineRemote extends Activity implements ServiceListener, Respo
     public void onPause() {
     	lock_.release();
     	super.onPause();
+    }
+    
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menu_info) {
+    	super.onCreateContextMenu(menu, v, menu_info);
+    	MenuInflater inflater = getMenuInflater();
+    	inflater.inflate(R.menu.server_context, menu);
+    }
+    
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+    	// TODO: Implement remove.
+    	return true;
     }
 
 

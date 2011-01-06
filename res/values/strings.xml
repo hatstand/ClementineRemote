@@ -8,4 +8,5 @@
 <string name="server_name_hint">Server name</string>
 <string name="address_hint">Host or IP</string>
 <string name="port_hint">12345</string>
+<string name="remove">Remove</string>
 </resources>
