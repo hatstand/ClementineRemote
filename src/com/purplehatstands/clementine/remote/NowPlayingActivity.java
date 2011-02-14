@@ -99,7 +99,7 @@ public class NowPlayingActivity extends Activity {
 		super.onConfigurationChanged(newConfig);
 		InitialiseUI();
 		if (current_status_ != null) {
-			UpdateStatus(current_status_);
+		  UpdateStatus(current_status_);
 		}
 	}
 	
