@@ -36,118 +36,116 @@ import android.widget.TextView;
 
 public class ClementineRemote extends Activity implements ServiceListener {
 	private static final String TAG = "ClementineRemote";
-	
 	static final int ADD_SERVER_REQUEST = 0;
 	
-    private MulticastLock lock_;
-    private JmDNS mdns_ = null;
-    private WifiManager wifi_;
-    private ServerListAdapter servers_;
-    
-    private XMPPConnection xmpp_;
-	
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        
-        servers_ = new ServerListAdapter(this);
-        
-        ListView listview = (ListView) findViewById(R.id.servers);
+  private MulticastLock lock_;
+  private JmDNS mdns_ = null;
+  private WifiManager wifi_;
+  private ServerListAdapter servers_;
+  
+  private XMPPConnection xmpp_;
 
-        final TextView button = new TextView(this);
-        final Context context = this;
-        button.setText("Add server");
-        button.setHeight(50);
-        button.setTextSize(30);
-        button.setTextColor(Color.WHITE);
-        button.setBackgroundResource(android.R.drawable.list_selector_background);
-        button.setGravity(Gravity.FILL_HORIZONTAL);
-        button.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				Log.d(TAG, "clicked");
-				startActivityForResult(new Intent(context, AddServerActivity.class), ADD_SERVER_REQUEST);
-			}
-		});
+  /** Called when the activity is first created. */
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.main);
+    
+    servers_ = new ServerListAdapter(this);
+    
+    ListView listview = (ListView) findViewById(R.id.servers);
 
-        listview.addHeaderView(button);
-        listview.setAdapter(servers_);
-        
-        wifi_ = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        lock_ = wifi_.createMulticastLock("fliing_lock");
-        lock_.setReferenceCounted(true);
-        
-        SASLAuthentication.supportSASLMechanism("PLAIN");
-        ConnectionConfiguration config = new ConnectionConfiguration("talk.google.com", 5222, "gmail.com");
-        xmpp_ = new XMPPConnection(config);
-        try {
-			xmpp_.connect();
-			xmpp_.login("timetabletest2@googlemail.com", "timetabletestpassword");
-			Presence presence = new Presence(Presence.Type.available);
-			presence.setStatus("Hello World!");
-			xmpp_.sendPacket(presence);
-		} catch (XMPPException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-    }
-    
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    	if (requestCode != ADD_SERVER_REQUEST) {
-    		return;
-    	}
+    final TextView button = new TextView(this);
+    final Context context = this;
+    button.setText("Add server");
+    button.setHeight(50);
+    button.setTextSize(30);
+    button.setTextColor(Color.WHITE);
+    button.setBackgroundResource(android.R.drawable.list_selector_background);
+    button.setGravity(Gravity.FILL_HORIZONTAL);
+    button.setOnClickListener(new View.OnClickListener() {
+  		public void onClick(View v) {
+  			Log.d(TAG, "clicked");
+  			startActivityForResult(new Intent(context, AddServerActivity.class), ADD_SERVER_REQUEST);
+  		}
+  	});
 
-    	if (resultCode == RESULT_OK) {
-    		Bundle extras = data.getExtras();
-    		Server server = (Server) extras.get(Server.class.getName());
-    		servers_.addServer(server);
-    	}
-    }
+    listview.addHeaderView(button);
+    listview.setAdapter(servers_);
     
-    @Override
-    public void onResume() {
-        lock_.acquire();
-        if (mdns_ == null) {
-        	Log.d(TAG, "Creating MDNS listener");
-	        try {
-	        	WifiInfo info = wifi_.getConnectionInfo();
-	        	int intaddr = info.getIpAddress();
-	        	
-	        	byte[] byteaddr = new byte[] { (byte)(intaddr & 0xff), (byte)(intaddr >> 8 & 0xff), (byte)(intaddr >> 16 & 0xff), (byte)(intaddr >> 24 & 0xff) };
-	        	InetAddress addr = InetAddress.getByAddress(byteaddr);
-	        	
-	        	Log.d(TAG, String.format("found intaddr=%d, addr=%s", intaddr, addr.toString()));
-	        	
-				mdns_ = JmDNS.create(addr, "foobar");
-				mdns_.addServiceListener("_clementine._tcp.local.", this);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        }
-        super.onResume();
-    }
+    wifi_ = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+    lock_ = wifi_.createMulticastLock("fliing_lock");
+    lock_.setReferenceCounted(true);
     
-    @Override
-    public void onPause() {
-    	lock_.release();
-    	super.onPause();
+    SASLAuthentication.supportSASLMechanism("PLAIN");
+    ConnectionConfiguration config = new ConnectionConfiguration("talk.google.com", 5222, "gmail.com");
+    xmpp_ = new XMPPConnection(config);
+    try {
+  		xmpp_.connect();
+  		xmpp_.login("timetabletest2@googlemail.com", "timetabletestpassword");
+  		Presence presence = new Presence(Presence.Type.available);
+  		presence.setStatus("Hello World!");
+  		xmpp_.sendPacket(presence);
+  	} catch (XMPPException e) {
+  		// TODO Auto-generated catch block
+  		e.printStackTrace();
+  	}
+  }
+  
+  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+  	if (requestCode != ADD_SERVER_REQUEST) {
+  		return;
+  	}
+
+  	if (resultCode == RESULT_OK) {
+  		Bundle extras = data.getExtras();
+  		Server server = (Server) extras.get(Server.class.getName());
+  		servers_.addServer(server);
+  	}
+  }
+  
+  @Override
+  public void onResume() {
+    lock_.acquire();
+    if (mdns_ == null) {
+    	Log.d(TAG, "Creating MDNS listener");
+      try {
+      	WifiInfo info = wifi_.getConnectionInfo();
+      	int intaddr = info.getIpAddress();
+      	
+      	byte[] byteaddr = new byte[] { (byte)(intaddr & 0xff), (byte)(intaddr >> 8 & 0xff), (byte)(intaddr >> 16 & 0xff), (byte)(intaddr >> 24 & 0xff) };
+      	InetAddress addr = InetAddress.getByAddress(byteaddr);
+      	
+      	Log.d(TAG, String.format("found intaddr=%d, addr=%s", intaddr, addr.toString()));
+        	
+  			mdns_ = JmDNS.create(addr, "foobar");
+  			mdns_.addServiceListener("_clementine._tcp.local.", this);
+  		} catch (IOException e) {
+  			// TODO Auto-generated catch block
+  			e.printStackTrace();
+  		}
     }
-    
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menu_info) {
-    	super.onCreateContextMenu(menu, v, menu_info);
-    	MenuInflater inflater = getMenuInflater();
-    	inflater.inflate(R.menu.server_context, menu);
-    }
-    
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-    	// TODO: Implement remove.
-    	return true;
-    }
+    super.onResume();
+  }
+  
+  @Override
+  public void onPause() {
+  	lock_.release();
+  	super.onPause();
+  }
+  
+  @Override
+  public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menu_info) {
+  	super.onCreateContextMenu(menu, v, menu_info);
+  	MenuInflater inflater = getMenuInflater();
+  	inflater.inflate(R.menu.server_context, menu);
+  }
+  
+  @Override
+  public boolean onContextItemSelected(MenuItem item) {
+  	// TODO: Implement remove.
+  	return true;
+  }
 
 
 	public void serviceAdded(ServiceEvent event) {
