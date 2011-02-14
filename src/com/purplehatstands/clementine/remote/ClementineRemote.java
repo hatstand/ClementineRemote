@@ -1,9 +1,6 @@
 package com.purplehatstands.clementine.remote;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 
 import javax.jmdns.JmDNS;
@@ -11,20 +8,18 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.SASLAuthentication;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.pubsub.PresenceState;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.http.AndroidHttpClient;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
@@ -39,7 +34,7 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class ClementineRemote extends Activity implements ServiceListener, ResponseHandler<String> {
+public class ClementineRemote extends Activity implements ServiceListener {
 	private static final String TAG = "ClementineRemote";
 	
 	static final int ADD_SERVER_REQUEST = 0;
@@ -48,6 +43,8 @@ public class ClementineRemote extends Activity implements ServiceListener, Respo
     private JmDNS mdns_ = null;
     private WifiManager wifi_;
     private ServerListAdapter servers_;
+    
+    private XMPPConnection xmpp_;
 	
     /** Called when the activity is first created. */
     @Override
@@ -80,6 +77,21 @@ public class ClementineRemote extends Activity implements ServiceListener, Respo
         wifi_ = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         lock_ = wifi_.createMulticastLock("fliing_lock");
         lock_.setReferenceCounted(true);
+        
+        SASLAuthentication.supportSASLMechanism("PLAIN");
+        ConnectionConfiguration config = new ConnectionConfiguration("talk.google.com", 5222, "gmail.com");
+        xmpp_ = new XMPPConnection(config);
+        try {
+			xmpp_.connect();
+			xmpp_.login("timetabletest2@googlemail.com", "timetabletestpassword");
+			Presence presence = new Presence(Presence.Type.available);
+			presence.setStatus("Hello World!");
+			xmpp_.sendPacket(presence);
+		} catch (XMPPException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
     }
     
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -147,46 +159,14 @@ public class ClementineRemote extends Activity implements ServiceListener, Respo
 		String address = info.getHostAddress();
 		int port = info.getPort();
 		
-		servers_.addServer(new Server(address, address, port));
-		
-		AndroidHttpClient http = AndroidHttpClient.newInstance("Clementine Remote");
-		try {
-			String response = http.execute(new HttpHost(address, port), new HttpGet("/"), this);
-			JSONTokener tokener = new JSONTokener(response);
-			JSONObject object;
-			object = (JSONObject)tokener.nextValue();
-			String content = object.getString("song");
-			Log.d(TAG, "Json:" + content);
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
+		servers_.addDetectedServer(new Server(address, address, port));
 	}
 
 	public void serviceRemoved(ServiceEvent event) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public void serviceResolved(ServiceEvent event) {
 		// TODO Auto-generated method stub
-	}
-
-	public String handleResponse(HttpResponse response)
-			throws ClientProtocolException, IOException {
-		InputStream content = response.getEntity().getContent();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-		String line;
-		StringBuilder builder = new StringBuilder();
-		while ((line = reader.readLine()) != null) {
-			builder.append(line);
-		}
-		return builder.toString();
 	}
 }

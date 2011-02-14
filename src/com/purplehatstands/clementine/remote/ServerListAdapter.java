@@ -67,6 +67,11 @@ public class ServerListAdapter implements ListAdapter {
 		storeServers();
 	}
 	
+	public void addDetectedServer(Server server) {
+		detected_servers_.add(server);
+		notifyObservers();
+	}
+	
 	public void removeServer(int position) {
 		Server s = (Server) getItem(position);
 		if (s != null) {
