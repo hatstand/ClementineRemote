@@ -8,10 +8,16 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
+import org.jivesoftware.smack.Chat;
+import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.MessageListener;
+import org.jivesoftware.smack.Roster;
+import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.pubsub.PresenceState;
 
@@ -86,6 +92,7 @@ public class ClementineRemote extends Activity implements ServiceListener {
   		Presence presence = new Presence(Presence.Type.available);
   		presence.setStatus("Hello World!");
   		xmpp_.sendPacket(presence);
+
   	} catch (XMPPException e) {
   		// TODO Auto-generated catch block
   		e.printStackTrace();
@@ -125,6 +132,25 @@ public class ClementineRemote extends Activity implements ServiceListener {
   			e.printStackTrace();
   		}
     }
+		
+  	ChatManager chat_manager = xmpp_.getChatManager();
+  	Chat chat = chat_manager.createChat("john.maguire@gmail.com/foobar1A6235CD", new MessageListener() {
+  		public void processMessage(Chat chat, Message message) {
+  			Log.d(TAG, "Received message:" + message.getBody() + " from:" + message.getFrom());
+  		}
+  	});
+  	
+  	try {
+  		Message message = new Message();
+  		message.setTo("john.maguire@gmail.com/foobar1A6235CD");
+  		message.addBody("en", "Lo World!");
+  		Log.d(TAG, message.toXML());
+  		chat.sendMessage(message);
+  	} catch (XMPPException e) {
+  		// TODO Auto-generated catch block
+  		e.printStackTrace();
+  	}
+      
     super.onResume();
   }
   
