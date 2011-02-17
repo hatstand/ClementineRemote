@@ -123,6 +123,7 @@ public class ClementineRemote extends Activity implements ServiceListener {
         e.printStackTrace();
       }
     }
+    
     AccountManager manager = AccountManager.get(this);
     Account google_account = manager.getAccountsByType("com.google")[0];
     manager.getAuthToken(google_account, "mail", true, new AccountManagerCallback<Bundle>() {
@@ -133,6 +134,9 @@ public class ClementineRemote extends Activity implements ServiceListener {
             auth_token_ = bundle.getString("authtoken");
             Log.d(TAG, "Auth token:" + auth_token_);
             Connect();
+          } else if (bundle.containsKey(AccountManager.KEY_INTENT)) {
+            Intent intent = (Intent)bundle.get(AccountManager.KEY_INTENT);
+            startActivity(intent);
           }
         } catch (OperationCanceledException e) {
           // TODO Auto-generated catch block
