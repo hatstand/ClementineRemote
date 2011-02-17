@@ -41,14 +41,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class ClementineRemote extends Activity implements ServiceListener {
-	private static final String TAG = "ClementineRemote";
-	static final int ADD_SERVER_REQUEST = 0;
-	
+  private static final String TAG = "ClementineRemote";
+  static final int ADD_SERVER_REQUEST = 0;
+
   private MulticastLock lock_;
   private JmDNS mdns_ = null;
   private WifiManager wifi_;
   private ServerListAdapter servers_;
-  
+
   private XMPPConnection xmpp_;
 
   /** Called when the activity is first created. */
@@ -56,9 +56,9 @@ public class ClementineRemote extends Activity implements ServiceListener {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
-    
+
     servers_ = new ServerListAdapter(this);
-    
+
     ListView listview = (ListView) findViewById(R.id.servers);
 
     final TextView button = new TextView(this);
@@ -70,127 +70,127 @@ public class ClementineRemote extends Activity implements ServiceListener {
     button.setBackgroundResource(android.R.drawable.list_selector_background);
     button.setGravity(Gravity.FILL_HORIZONTAL);
     button.setOnClickListener(new View.OnClickListener() {
-  		public void onClick(View v) {
-  			Log.d(TAG, "clicked");
-  			startActivityForResult(new Intent(context, AddServerActivity.class), ADD_SERVER_REQUEST);
-  		}
-  	});
+      public void onClick(View v) {
+        Log.d(TAG, "clicked");
+        startActivityForResult(new Intent(context, AddServerActivity.class), ADD_SERVER_REQUEST);
+      }
+    });
 
     listview.addHeaderView(button);
     listview.setAdapter(servers_);
-    
+
     wifi_ = (WifiManager) getSystemService(Context.WIFI_SERVICE);
     lock_ = wifi_.createMulticastLock("fliing_lock");
     lock_.setReferenceCounted(true);
-    
+
     SASLAuthentication.supportSASLMechanism("PLAIN");
     ConnectionConfiguration config = new ConnectionConfiguration("talk.google.com", 5222, "gmail.com");
     xmpp_ = new XMPPConnection(config);
     try {
-  		xmpp_.connect();
-  		xmpp_.login("timetabletest2@googlemail.com", "timetabletestpassword");
-  		Presence presence = new Presence(Presence.Type.available);
-  		presence.setStatus("Hello World!");
-  		xmpp_.sendPacket(presence);
+      xmpp_.connect();
+      xmpp_.login("timetabletest2@googlemail.com", "timetabletestpassword");
+      Presence presence = new Presence(Presence.Type.available);
+      presence.setStatus("Hello World!");
+      xmpp_.sendPacket(presence);
 
-  	} catch (XMPPException e) {
-  		// TODO Auto-generated catch block
-  		e.printStackTrace();
-  	}
+    } catch (XMPPException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
   }
-  
+
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-  	if (requestCode != ADD_SERVER_REQUEST) {
-  		return;
-  	}
+    if (requestCode != ADD_SERVER_REQUEST) {
+      return;
+    }
 
-  	if (resultCode == RESULT_OK) {
-  		Bundle extras = data.getExtras();
-  		Server server = (Server) extras.get(Server.class.getName());
-  		servers_.addServer(server);
-  	}
+    if (resultCode == RESULT_OK) {
+      Bundle extras = data.getExtras();
+      Server server = (Server) extras.get(Server.class.getName());
+      servers_.addServer(server);
+    }
   }
-  
+
   @Override
   public void onResume() {
     lock_.acquire();
     if (mdns_ == null) {
-    	Log.d(TAG, "Creating MDNS listener");
+      Log.d(TAG, "Creating MDNS listener");
       try {
-      	WifiInfo info = wifi_.getConnectionInfo();
-      	int intaddr = info.getIpAddress();
-      	
-      	byte[] byteaddr = new byte[] { (byte)(intaddr & 0xff), (byte)(intaddr >> 8 & 0xff), (byte)(intaddr >> 16 & 0xff), (byte)(intaddr >> 24 & 0xff) };
-      	InetAddress addr = InetAddress.getByAddress(byteaddr);
-      	
-      	Log.d(TAG, String.format("found intaddr=%d, addr=%s", intaddr, addr.toString()));
-        	
-  			mdns_ = JmDNS.create(addr, "foobar");
-  			mdns_.addServiceListener("_clementine._tcp.local.", this);
-  		} catch (IOException e) {
-  			// TODO Auto-generated catch block
-  			e.printStackTrace();
-  		}
+        WifiInfo info = wifi_.getConnectionInfo();
+        int intaddr = info.getIpAddress();
+
+        byte[] byteaddr = new byte[] { (byte)(intaddr & 0xff), (byte)(intaddr >> 8 & 0xff), (byte)(intaddr >> 16 & 0xff), (byte)(intaddr >> 24 & 0xff) };
+        InetAddress addr = InetAddress.getByAddress(byteaddr);
+
+        Log.d(TAG, String.format("found intaddr=%d, addr=%s", intaddr, addr.toString()));
+
+        mdns_ = JmDNS.create(addr, "foobar");
+        mdns_.addServiceListener("_clementine._tcp.local.", this);
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
     }
-		
-  	ChatManager chat_manager = xmpp_.getChatManager();
-  	Chat chat = chat_manager.createChat("john.maguire@gmail.com/foobar1A6235CD", new MessageListener() {
-  		public void processMessage(Chat chat, Message message) {
-  			Log.d(TAG, "Received message:" + message.getBody() + " from:" + message.getFrom());
-  		}
-  	});
-  	
-  	try {
-  		Message message = new Message();
-  		message.setTo("john.maguire@gmail.com/foobar1A6235CD");
-  		message.addBody("en", "Lo World!");
-  		Log.d(TAG, message.toXML());
-  		chat.sendMessage(message);
-  	} catch (XMPPException e) {
-  		// TODO Auto-generated catch block
-  		e.printStackTrace();
-  	}
-      
+
+    ChatManager chat_manager = xmpp_.getChatManager();
+    Chat chat = chat_manager.createChat("john.maguire@gmail.com/foobar1A6235CD", new MessageListener() {
+      public void processMessage(Chat chat, Message message) {
+        Log.d(TAG, "Received message:" + message.getBody() + " from:" + message.getFrom());
+      }
+    });
+
+    try {
+      Message message = new Message();
+      message.setTo("john.maguire@gmail.com/foobar1A6235CD");
+      message.addBody("en", "Lo World!");
+      Log.d(TAG, message.toXML());
+      chat.sendMessage(message);
+    } catch (XMPPException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
     super.onResume();
   }
-  
+
   @Override
   public void onPause() {
-  	lock_.release();
-  	super.onPause();
+    lock_.release();
+    super.onPause();
   }
-  
+
   @Override
   public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menu_info) {
-  	super.onCreateContextMenu(menu, v, menu_info);
-  	MenuInflater inflater = getMenuInflater();
-  	inflater.inflate(R.menu.server_context, menu);
+    super.onCreateContextMenu(menu, v, menu_info);
+    MenuInflater inflater = getMenuInflater();
+    inflater.inflate(R.menu.server_context, menu);
   }
-  
+
   @Override
   public boolean onContextItemSelected(MenuItem item) {
-  	// TODO: Implement remove.
-  	return true;
+    // TODO: Implement remove.
+    return true;
   }
 
 
-	public void serviceAdded(ServiceEvent event) {
-		Log.d(TAG, event.getName());
-		// Lookup full TXT record.
-		ServiceInfo info = mdns_.getServiceInfo("_clementine._tcp.local.", event.getName());
-		Log.d(TAG, info.toString());
-		
-		String address = info.getHostAddress();
-		int port = info.getPort();
-		
-		servers_.addDetectedServer(new Server(address, address, port));
-	}
+  public void serviceAdded(ServiceEvent event) {
+    Log.d(TAG, event.getName());
+    // Lookup full TXT record.
+    ServiceInfo info = mdns_.getServiceInfo("_clementine._tcp.local.", event.getName());
+    Log.d(TAG, info.toString());
 
-	public void serviceRemoved(ServiceEvent event) {
-		// TODO Auto-generated method stub
-	}
+    String address = info.getHostAddress();
+    int port = info.getPort();
 
-	public void serviceResolved(ServiceEvent event) {
-		// TODO Auto-generated method stub
-	}
+    servers_.addDetectedServer(new Server(address, address, port));
+  }
+
+  public void serviceRemoved(ServiceEvent event) {
+    // TODO Auto-generated method stub
+  }
+
+  public void serviceResolved(ServiceEvent event) {
+    // TODO Auto-generated method stub
+  }
 }
