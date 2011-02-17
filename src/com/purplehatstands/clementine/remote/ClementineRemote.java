@@ -21,6 +21,12 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.pubsub.PresenceState;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -50,6 +56,8 @@ public class ClementineRemote extends Activity implements ServiceListener {
   private ServerListAdapter servers_;
 
   private XMPPConnection xmpp_;
+  
+  private String auth_token_;
 
   /** Called when the activity is first created. */
   @Override
@@ -83,20 +91,7 @@ public class ClementineRemote extends Activity implements ServiceListener {
     lock_ = wifi_.createMulticastLock("fliing_lock");
     lock_.setReferenceCounted(true);
 
-    SASLAuthentication.supportSASLMechanism("PLAIN");
-    ConnectionConfiguration config = new ConnectionConfiguration("talk.google.com", 5222, "gmail.com");
-    xmpp_ = new XMPPConnection(config);
-    try {
-      xmpp_.connect();
-      xmpp_.login("timetabletest2@googlemail.com", "timetabletestpassword");
-      Presence presence = new Presence(Presence.Type.available);
-      presence.setStatus("Hello World!");
-      xmpp_.sendPacket(presence);
 
-    } catch (XMPPException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
   }
 
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -132,7 +127,59 @@ public class ClementineRemote extends Activity implements ServiceListener {
         e.printStackTrace();
       }
     }
+    AccountManager manager = AccountManager.get(this);
+    Account google_account = manager.getAccountsByType("com.google")[0];
+    manager.getAuthToken(google_account, "mail", true, new AccountManagerCallback<Bundle>() {
+      public void run(AccountManagerFuture<Bundle> arg0) {
+        try {
+          Bundle bundle = arg0.getResult();
+          if (bundle.containsKey("authtoken")) {
+            auth_token_ = bundle.getString("authtoken");
+            Log.d(TAG, "Auth token:" + auth_token_);
+            Connect();
+          }
+        } catch (OperationCanceledException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (AuthenticatorException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+        
+      }
+    }, null);
 
+
+    super.onResume();
+  }
+  
+  private void Connect() {
+    SASLAuthentication.registerSASLMechanism("X-GOOGLE-TOKEN", GoogleTokenAuthenticator.class);
+    
+    
+    SASLAuthentication.supportSASLMechanism("X-GOOGLE-TOKEN", 0);
+    // X-GOOGLE-TOKEN? service=chromiumsync?
+    // <0×00>tokenmechanism@gmail.com<0×00>DQAAAHIA … QhXLa4g
+    // base64: AHRva2VubWVjaGFu ..snip snip.. JS2RSVzE1aXlvZEMtZmpTUWhYTGE0Zw==
+    ConnectionConfiguration config = new ConnectionConfiguration("talk.google.com", 5222, "gmail.com");
+    config.setDebuggerEnabled(true);
+    xmpp_ = new XMPPConnection(config);
+    try {
+      xmpp_.connect();
+      xmpp_.login("john.maguire@gmail.com", auth_token_);
+      Presence presence = new Presence(Presence.Type.available);
+      presence.setStatus("Hello World!");
+      xmpp_.sendPacket(presence);
+    } catch (XMPPException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+  
+  private void SendMessage() {
     ChatManager chat_manager = xmpp_.getChatManager();
     Chat chat = chat_manager.createChat("john.maguire@gmail.com/foobar1A6235CD", new MessageListener() {
       public void processMessage(Chat chat, Message message) {
@@ -150,8 +197,6 @@ public class ClementineRemote extends Activity implements ServiceListener {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-
-    super.onResume();
   }
 
   @Override
