@@ -12,14 +12,11 @@ import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
-import org.jivesoftware.smack.Roster;
-import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smackx.pubsub.PresenceState;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -28,7 +25,6 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -161,7 +157,7 @@ public class ClementineRemote extends Activity implements ServiceListener {
     
     
     SASLAuthentication.supportSASLMechanism("X-GOOGLE-TOKEN", 0);
-    // X-GOOGLE-TOKEN? service=chromiumsync?
+    // X-GOOGLE-TOKEN service=mail
     // <0×00>tokenmechanism@gmail.com<0×00>DQAAAHIA … QhXLa4g
     // base64: AHRva2VubWVjaGFu ..snip snip.. JS2RSVzE1aXlvZEMtZmpTUWhYTGE0Zw==
     ConnectionConfiguration config = new ConnectionConfiguration("talk.google.com", 5222, "gmail.com");
