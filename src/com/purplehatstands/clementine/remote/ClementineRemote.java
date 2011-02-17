@@ -25,13 +25,17 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
+import android.util.Config;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -87,8 +91,8 @@ public class ClementineRemote extends Activity implements ServiceListener {
     lock_ = wifi_.createMulticastLock("fliing_lock");
     lock_.setReferenceCounted(true);
 
-
   }
+
 
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     if (requestCode != ADD_SERVER_REQUEST) {
@@ -123,6 +127,9 @@ public class ClementineRemote extends Activity implements ServiceListener {
         e.printStackTrace();
       }
     }
+    
+    RegisterC2DM();
+    
     AccountManager manager = AccountManager.get(this);
     Account google_account = manager.getAccountsByType("com.google")[0];
     manager.getAuthToken(google_account, "mail", true, new AccountManagerCallback<Bundle>() {
@@ -133,6 +140,8 @@ public class ClementineRemote extends Activity implements ServiceListener {
             auth_token_ = bundle.getString("authtoken");
             Log.d(TAG, "Auth token:" + auth_token_);
             Connect();
+          } else if (bundle.containsKey("intent")) {
+            startActivity((Intent)bundle.getParcelable("intent"));
           }
         } catch (OperationCanceledException e) {
           // TODO Auto-generated catch block
@@ -157,11 +166,9 @@ public class ClementineRemote extends Activity implements ServiceListener {
     
     
     SASLAuthentication.supportSASLMechanism("X-GOOGLE-TOKEN", 0);
-    // X-GOOGLE-TOKEN service=mail
-    // <0×00>tokenmechanism@gmail.com<0×00>DQAAAHIA … QhXLa4g
-    // base64: AHRva2VubWVjaGFu ..snip snip.. JS2RSVzE1aXlvZEMtZmpTUWhYTGE0Zw==
+
     ConnectionConfiguration config = new ConnectionConfiguration("talk.google.com", 5222, "gmail.com");
-    config.setDebuggerEnabled(true);
+    config.setDebuggerEnabled(false);
     xmpp_ = new XMPPConnection(config);
     try {
       xmpp_.connect();
@@ -233,5 +240,57 @@ public class ClementineRemote extends Activity implements ServiceListener {
 
   public void serviceResolved(ServiceEvent event) {
     // TODO Auto-generated method stub
+  }
+  
+  // C2DM
+  private void RegisterC2DM() {
+    Log.d(TAG, "RegisterC2DM");
+    SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+    if (prefs.contains("c2dm_reg")) {
+      Log.d(TAG, prefs.getString("c2dm_reg", ""));
+      return;
+    }
+    Log.d(TAG, "Sending intent");
+    Intent registrationIntent = new Intent("com.google.android.c2dm.intent.REGISTER");
+    registrationIntent.putExtra("app", PendingIntent.getBroadcast(this, 0, new Intent(), 0)); // boilerplate
+    registrationIntent.putExtra("sender", "c2dm@clementine-player.org");
+    startService(registrationIntent);
+  }
+  
+  // C2DM
+  public void onReceive(Context context, Intent intent) {
+    Log.d(TAG, "onReceive");
+    if (intent.getAction().equals("com.google.android.c2dm.intent.REGISTRATION")) {
+        HandleRegistration(context, intent);
+    } else if (intent.getAction().equals("com.google.android.c2dm.intent.RECEIVE")) {
+        HandleMessage(context, intent);
+     }
+  }
+
+  // C2DM
+  private void HandleRegistration(Context context, Intent intent) {
+      String registration = intent.getStringExtra("registration_id"); 
+      if (intent.getStringExtra("error") != null) {
+          // Registration failed, should try again later.
+      } else if (intent.getStringExtra("unregistered") != null) {
+          // unregistration done, new messages from the authorized sender will be rejected
+      } else if (registration != null) {
+         // Send the registration ID to the 3rd party site that is sending the messages.
+         // This should be done in a separate thread.
+         // When done, remember that all registration is done.
+        Log.d(TAG, "C2DM Registration: " + registration);
+        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+        Editor editor = prefs.edit();
+        editor.putString("c2dm_reg", registration);
+      }
+  }
+  
+  // C2DM
+  private void HandleMessage(Context context, Intent intent) {
+    String accountName = intent.getExtras().getString("account");
+    String message = intent.getExtras().getString("message");
+    
+    Log.d(TAG, "Message received from: " + accountName);
+    Log.d(TAG, "Message: " + message);
   }
 }
