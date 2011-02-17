@@ -246,7 +246,7 @@ public class ClementineRemote extends Activity implements ServiceListener {
   // C2DM
   private void RegisterC2DM() {
     Log.d(TAG, "RegisterC2DM");
-    SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+    SharedPreferences prefs = getSharedPreferences("c2dm", MODE_PRIVATE);
     if (prefs.contains("c2dm_reg")) {
       Log.d(TAG, prefs.getString("c2dm_reg", ""));
       return;
@@ -258,40 +258,5 @@ public class ClementineRemote extends Activity implements ServiceListener {
     startService(registrationIntent);
   }
   
-  // C2DM
-  public void onReceive(Context context, Intent intent) {
-    Log.d(TAG, "onReceive");
-    if (intent.getAction().equals("com.google.android.c2dm.intent.REGISTRATION")) {
-        HandleRegistration(context, intent);
-    } else if (intent.getAction().equals("com.google.android.c2dm.intent.RECEIVE")) {
-        HandleMessage(context, intent);
-     }
-  }
 
-  // C2DM
-  private void HandleRegistration(Context context, Intent intent) {
-      String registration = intent.getStringExtra("registration_id"); 
-      if (intent.getStringExtra("error") != null) {
-          // Registration failed, should try again later.
-      } else if (intent.getStringExtra("unregistered") != null) {
-          // unregistration done, new messages from the authorized sender will be rejected
-      } else if (registration != null) {
-         // Send the registration ID to the 3rd party site that is sending the messages.
-         // This should be done in a separate thread.
-         // When done, remember that all registration is done.
-        Log.d(TAG, "C2DM Registration: " + registration);
-        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
-        Editor editor = prefs.edit();
-        editor.putString("c2dm_reg", registration);
-      }
-  }
-  
-  // C2DM
-  private void HandleMessage(Context context, Intent intent) {
-    String accountName = intent.getExtras().getString("account");
-    String message = intent.getExtras().getString("message");
-    
-    Log.d(TAG, "Message received from: " + accountName);
-    Log.d(TAG, "Message: " + message);
-  }
 }
