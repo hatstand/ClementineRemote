@@ -20,10 +20,6 @@ import org.jivesoftware.smack.packet.Presence;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
-import android.accounts.AuthenticatorException;
-import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -46,8 +42,8 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class ClementineRemote extends Activity implements ServiceListener {
-  private static final String TAG = "ClementineRemote";
+public class ClementineRemote extends Activity implements ServiceListener, AuthTokenReceiver {
+  static final String TAG = "ClementineRemote";
   static final int ADD_SERVER_REQUEST = 0;
 
   private MulticastLock lock_;
@@ -56,8 +52,6 @@ public class ClementineRemote extends Activity implements ServiceListener {
   private ServerListAdapter servers_;
 
   private XMPPConnection xmpp_;
-  
-  private String auth_token_;
 
   /** Called when the activity is first created. */
   @Override
@@ -132,40 +126,13 @@ public class ClementineRemote extends Activity implements ServiceListener {
 
     AccountManager manager = AccountManager.get(this);
     Account google_account = manager.getAccountsByType("com.google")[0];
-    manager.getAuthToken(google_account, "mail", true, new AccountManagerCallback<Bundle>() {
-      public void run(AccountManagerFuture<Bundle> arg0) {
-        try {
-          Bundle bundle = arg0.getResult();
-          if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-            auth_token_ = bundle.getString(AccountManager.KEY_AUTHTOKEN);
-            Log.d(TAG, "Auth token:" + auth_token_);
-            Connect();
-          } else if (bundle.containsKey(AccountManager.KEY_INTENT)) {
-            Intent intent = (Intent)bundle.get(AccountManager.KEY_INTENT);
-            startActivity(intent);
-          }
-        } catch (OperationCanceledException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        } catch (AuthenticatorException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        } catch (IOException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
-        
-      }
-    }, null);
-
-
+    GetAuthTokenCallback callback = new GetAuthTokenCallback("mail", this, this);
+    manager.getAuthToken(google_account, "mail", true, callback, null);
     super.onResume();
   }
   
-  private void Connect() {
+  private void Connect(String token) {
     SASLAuthentication.registerSASLMechanism("X-GOOGLE-TOKEN", GoogleTokenAuthenticator.class);
-    
-    
     SASLAuthentication.supportSASLMechanism("X-GOOGLE-TOKEN", 0);
 
     ConnectionConfiguration config = new ConnectionConfiguration("talk.google.com", 5222, "gmail.com");
@@ -173,7 +140,7 @@ public class ClementineRemote extends Activity implements ServiceListener {
     xmpp_ = new XMPPConnection(config);
     try {
       xmpp_.connect();
-      xmpp_.login("john.maguire@gmail.com", auth_token_);
+      xmpp_.login("john.maguire@gmail.com", token);
       Presence presence = new Presence(Presence.Type.available);
       presence.setStatus("Hello World!");
       xmpp_.sendPacket(presence);
@@ -246,6 +213,12 @@ public class ClementineRemote extends Activity implements ServiceListener {
   // C2DM
   private void RegisterC2DM() {
     Log.d(TAG, "RegisterC2DM");
+    // We're gonna need an Appengine auth token soon enough. Do it here as it may prompt the user.
+    AccountManager manager = AccountManager.get(this);
+    Account google_account = manager.getAccountsByType("com.google")[0];
+    GetAuthTokenCallback callback = new GetAuthTokenCallback("ah", this, this);
+    manager.getAuthToken(google_account, "ah", true, callback, null);
+    
     SharedPreferences prefs = getSharedPreferences("c2dm", MODE_PRIVATE);
     if (prefs.contains("c2dm_reg")) {
       Log.d(TAG, prefs.getString("c2dm_reg", ""));
@@ -258,5 +231,12 @@ public class ClementineRemote extends Activity implements ServiceListener {
     startService(registrationIntent);
   }
   
-
+  public void OnAuthTokenReceived(String service, String token) {
+    if (service == "mail") {
+      Connect(token);
+    } else if (service == "ah") {
+      // Don't do anything.
+      Log.d(TAG, "Got Appengine auth");
+    }
+  }
 }
