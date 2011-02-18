@@ -136,8 +136,8 @@ public class ClementineRemote extends Activity implements ServiceListener {
       public void run(AccountManagerFuture<Bundle> arg0) {
         try {
           Bundle bundle = arg0.getResult();
-          if (bundle.containsKey("authtoken")) {
-            auth_token_ = bundle.getString("authtoken");
+          if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+            auth_token_ = bundle.getString(AccountManager.KEY_AUTHTOKEN);
             Log.d(TAG, "Auth token:" + auth_token_);
             Connect();
           } else if (bundle.containsKey(AccountManager.KEY_INTENT)) {
