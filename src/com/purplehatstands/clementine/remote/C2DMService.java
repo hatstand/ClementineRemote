@@ -116,20 +116,19 @@ public class C2DMService extends IntentService implements AuthTokenReceiver {
     @Override
     protected Boolean doInBackground(String... params) {
       String token = params[0];
-      AndroidHttpClient client = AndroidHttpClient.newInstance("ClementineRemote");
-      client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
+      client_.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
 
       HttpGet get = new HttpGet(COOKIE_PATH + token);
       Log.d(TAG, get.getURI().toString());
       try {
-        HttpResponse response = client.execute(new HttpHost(DEV_SERVER, 443, "https"), get, http_context_);
+        HttpResponse response = client_.execute(new HttpHost(DEV_SERVER, 443, "https"), get, http_context_);
         // This should get redirected and fill in the ACSID cookie.
         return response.getStatusLine().getStatusCode() == 302;
       } catch (IOException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
       } finally {
-        client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
+        client_.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
       }
       return false;
     }
