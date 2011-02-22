@@ -3,6 +3,7 @@
       package="com.purplehatstands.clementine.remote"
       android:versionCode="1"
       android:versionName="1.0">
+    <uses-sdk android:minSdkVersion="8" />
 
     <application android:icon="@drawable/icon" android:label="@string/app_name">
         <activity android:name=".ClementineRemote"
@@ -11,16 +12,8 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-            	<action android:name="com.purplehatstands.clementine.remote.ADD_SERVER" />
-            	<category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
         </activity>
         
-        <activity android:name=".AddServerActivity"
-        		  android:label="@string/app_name">
-       	</activity>
-       	
        	<activity android:name=".NowPlayingActivity"
        			  android:label="@string/app_name"
        			  android:configChanges="orientation|keyboardHidden">
@@ -40,7 +33,7 @@
 		</receiver>
        	
        	<service android:name=".C2DMService" />
-       	
+       	<service android:name="RemoteControlService"></service>
 	</application>
 	
 	
@@ -56,4 +49,5 @@
 	<!-- Only this application can receive the messages and registration result --> 
 	<permission android:name="com.purplehatstands.clementine.remote.permission.C2D_MESSAGE" android:protectionLevel="signature" />
 	<uses-permission android:name="com.purplehatstands.clementine.remote.permission.C2D_MESSAGE" />
+
 </manifest> 

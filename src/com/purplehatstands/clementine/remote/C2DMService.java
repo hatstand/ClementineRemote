@@ -2,8 +2,6 @@ package com.purplehatstands.clementine.remote;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.CookieStore;
-import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +13,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
@@ -142,6 +139,8 @@ public class C2DMService extends IntentService implements AuthTokenReceiver {
       Log.d(TAG, "Got Cookie: " + result.toString());
       if (result) {
         new DeviceRegistration().execute(registration_id_);
+      } else {
+        client_.close();
       }
     }
   }
@@ -159,7 +158,6 @@ public class C2DMService extends IntentService implements AuthTokenReceiver {
       post_data.add(new BasicNameValuePair("manufacturer", Build.MANUFACTURER));
       post_data.add(new BasicNameValuePair("device", Build.DEVICE));
       post_data.add(new BasicNameValuePair("model", Build.MODEL));
-      post_data.add(new BasicNameValuePair("serial", Build.SERIAL));
       try {
         post.setEntity(new UrlEncodedFormEntity(post_data));
         HttpResponse response = client_.execute(
