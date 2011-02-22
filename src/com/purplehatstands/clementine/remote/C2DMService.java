@@ -92,8 +92,12 @@ public class C2DMService extends IntentService implements AuthTokenReceiver {
       SharedPreferences prefs = context.getSharedPreferences("c2dm", Context.MODE_PRIVATE);
       Editor editor = prefs.edit();
       editor.putString("c2dm_reg", registration);
+      editor.commit();
+      if (!prefs.getBoolean("registered", false)) {
+        // Register with our server if we haven't yet.
+        RegisterDeviceWithServer();
+      }
       registration_id_ = registration;
-      RegisterDeviceWithServer();
     }
   }
   
@@ -174,6 +178,15 @@ public class C2DMService extends IntentService implements AuthTokenReceiver {
       }
       return false;
     } 
+  }
+  
+  protected void onPostExecute(Boolean result) {
+    if (result) {
+      SharedPreferences prefs = getSharedPreferences("c2dm", MODE_PRIVATE);
+      SharedPreferences.Editor editor = prefs.edit();
+      editor.putBoolean("registered", true);
+      editor.commit();
+    }
   }
   
   // C2DM
