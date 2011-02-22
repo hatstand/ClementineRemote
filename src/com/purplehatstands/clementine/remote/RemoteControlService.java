@@ -30,6 +30,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class RemoteControlService extends Service {
+  private static final String TAG = "RemoteControlService";
   private final IBinder binder_ = new LocalBinder();
   
   private Context ui_context_;
@@ -84,8 +85,8 @@ public class RemoteControlService extends Service {
       public void run(AccountManagerFuture<Bundle> arg0) {
         try {
           Bundle bundle = arg0.getResult();
-          if (bundle.containsKey("authtoken")) {
-            auth_token_ = bundle.getString("authtoken");
+          if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+            auth_token_ = bundle.getString(AccountManager.KEY_AUTHTOKEN);
             StartConnection();
           } else if (bundle.containsKey(AccountManager.KEY_INTENT)) {
             Intent intent = (Intent)bundle.get(AccountManager.KEY_INTENT);

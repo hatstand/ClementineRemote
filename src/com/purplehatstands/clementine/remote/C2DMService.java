@@ -29,6 +29,7 @@ import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.PowerManager;
+import android.provider.Settings.Secure;
 import android.util.Log;
 
 public class C2DMService extends IntentService implements AuthTokenReceiver {
@@ -157,6 +158,8 @@ public class C2DMService extends IntentService implements AuthTokenReceiver {
       post_data.add(new BasicNameValuePair("manufacturer", Build.MANUFACTURER));
       post_data.add(new BasicNameValuePair("device", Build.DEVICE));
       post_data.add(new BasicNameValuePair("model", Build.MODEL));
+      String unique_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
+      post_data.add(new BasicNameValuePair("serial", unique_id));
       try {
         post.setEntity(new UrlEncodedFormEntity(post_data));
         HttpResponse response = client_.execute(
