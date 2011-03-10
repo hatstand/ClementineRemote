@@ -79,6 +79,9 @@ public class NowPlayingActivity extends Activity {
 		artist_ = (TextView) findViewById(R.id.artist);
 		album_ = (TextView) findViewById(R.id.album);
 		album_cover_ = (ImageView) findViewById(R.id.album_cover);
+		album_cover_.setScaleType(ImageView.ScaleType.FIT_CENTER);
+		album_cover_.setAdjustViewBounds(true);
+
 		
 		controls_ = new Controls();
 		

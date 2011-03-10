@@ -2,5 +2,5 @@
 	<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/track" android:text="Track" android:textStyle="italic"></TextView>
 	<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/artist" android:text="Artist"></TextView>
 	<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/album" android:text="Album"></TextView>
-	<ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/album_cover"></ImageView>	
+	<ImageView android:layout_width="fill_parent" android:layout_height="fill_parent" android:id="@+id/album_cover"></ImageView>	
 </LinearLayout>
