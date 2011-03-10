@@ -30,8 +30,9 @@ public class ClementineRemote extends Activity implements AuthTokenReceiver {
           Toast.makeText(ClementineRemote.this, "Failed to connect to XMPP: " + message, Toast.LENGTH_LONG).show();
         }
         
-        public void OnConnected() {
+        public void OnConnected(String full_jid) {
           Intent intent = new Intent(ClementineRemote.this, NowPlayingActivity.class);
+          intent.putExtra("full_jid", full_jid);
           ClementineRemote.this.startActivity(intent);
         }
       });

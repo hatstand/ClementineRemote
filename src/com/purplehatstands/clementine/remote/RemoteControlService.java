@@ -8,6 +8,8 @@ import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPException;
 
 import com.purplehatstands.libxrme.Connection;
+import com.purplehatstands.libxrme.PeerDiscoveryInterface;
+import com.purplehatstands.libxrme.RemoteControlHandler;
 import com.purplehatstands.libxrme.RemoteControlInterface;
 import com.purplehatstands.libxrme.State;
 
@@ -29,7 +31,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
-public class RemoteControlService extends Service {
+public class RemoteControlService extends Service implements PeerDiscoveryInterface {
   private static final String TAG = "RemoteControlService";
   private final IBinder binder_ = new LocalBinder();
   
@@ -38,6 +40,8 @@ public class RemoteControlService extends Service {
   private Account google_account_;
   private Connection connection_;
   private boolean first_connection_attempt_ = true;
+  
+  private RemoteControlInterface remote_control_ = null;
   
   private List<ConnectionHandler> connection_handlers_ = new ArrayList<ConnectionHandler>();
   private List<MediaStateHandler> media_state_handlers_ = new ArrayList<MediaStateHandler>();
@@ -49,7 +53,7 @@ public class RemoteControlService extends Service {
   }
   
   public interface ConnectionHandler {
-    public void OnConnected();
+    public void OnConnected(String full_jid);
     public void OnConnectionFailure(String message);
     public void OnDisconnected();
   }
@@ -57,6 +61,10 @@ public class RemoteControlService extends Service {
   public interface MediaStateHandler {
     public void OnStateChanged(final State state);
     public void OnAlbumArtChanged(final Bitmap image);
+  }
+  
+  public RemoteControlInterface GetRemoteControl() {
+    return remote_control_;
   }
 
   public void AddConnectionHandler(ConnectionHandler handler) {
@@ -116,7 +124,9 @@ public class RemoteControlService extends Service {
     connection_.set_password(auth_token_);
     connection_.set_agent_name("Clementine Remote on " + Build.PRODUCT);
     
-    connection_.SetRemoteControl(new RemoteControlInterface() {
+    connection_.SetPeerDiscoveryInterface(this);
+    
+    remote_control_ = new RemoteControlInterface() {
       public void StateChanged(String peer_jid_resource, State state) {
         for (MediaStateHandler handler: media_state_handlers_) {
           handler.OnStateChanged(state);
@@ -128,7 +138,8 @@ public class RemoteControlService extends Service {
           handler.OnAlbumArtChanged(image);
         }
       }
-    });
+    };
+    connection_.SetRemoteControl(remote_control_);
     
     try {
       connection_.Connect();
@@ -136,10 +147,7 @@ public class RemoteControlService extends Service {
       HandleConnectionFailure(e.getMessage());
       return;
     }
-    
-    for (ConnectionHandler handler: connection_handlers_) {
-      handler.OnConnected();
-    }
+
   }
 
   private void HandleConnectionFailure(String message) {
@@ -154,6 +162,12 @@ public class RemoteControlService extends Service {
       for (ConnectionHandler handler: connection_handlers_) {
         handler.OnConnectionFailure(message);
       }
+    }
+  }
+
+  public void PeerFound(String full_jid) {
+    for (ConnectionHandler handler: connection_handlers_) {
+      handler.OnConnected(full_jid);
     }
   }
 }
