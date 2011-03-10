@@ -29,6 +29,8 @@ public class NowPlayingActivity extends Activity {
 	private String full_jid_;
 	
 	private RemoteControlService service_;
+	
+	private boolean showing_controls_ = false;
 
   private ServiceConnection connection_ = new ServiceConnection() {
     public void onServiceConnected(ComponentName className, IBinder service) {
@@ -42,7 +44,6 @@ public class NowPlayingActivity extends Activity {
               artist_.setText(state.metadata.artist);
               album_.setText(state.metadata.album);
               controls_.setState(state);
-              controls_view_.show(0);
             }
           });
         }
@@ -106,8 +107,11 @@ public class NowPlayingActivity extends Activity {
 	
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
-	  if (hasFocus) {
+	  if (hasFocus && !showing_controls_) {
 	    controls_view_.show(0);
+	    showing_controls_ = true;
+	  } else {
+	    controls_view_.clearFocus();
 	  }
 	}
 	
