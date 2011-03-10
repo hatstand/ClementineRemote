@@ -7,6 +7,7 @@ import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -26,21 +27,6 @@ public class NowPlayingActivity extends Activity {
 	MediaController controls_view_;
 	Controls controls_;
 	private String full_jid_;
-	
-	RemoteControlInterface remote_control_ = new RemoteControlInterface() {
-    
-    @Override
-    public void StateChanged(String peer_jid_resource, State state) {
-      // TODO Auto-generated method stub
-      
-    }
-    
-    @Override
-    public void AlbumArtChanged(String peer_jid_resource, Bitmap image) {
-      // TODO Auto-generated method stub
-      
-    }
-  };
 	
 	private RemoteControlService service_;
 
@@ -99,7 +85,7 @@ public class NowPlayingActivity extends Activity {
 		controls_view_.setEnabled(true);
 		controls_view_.setPrevNextListeners(new OnClickListener() {    
       public void onClick(View v) {
-        // TODO Auto-generated method stub
+        Log.d(TAG, "Next clicked");
         service_.GetRemoteControl().Next(full_jid_);
       }
     }, new OnClickListener() {

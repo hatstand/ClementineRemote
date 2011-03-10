@@ -53,7 +53,7 @@ public class RemoteControlService extends Service implements PeerDiscoveryInterf
   }
   
   public interface ConnectionHandler {
-    public void OnConnected(String full_jid);
+    public void OnConnected(String full_jid, String identity);
     public void OnConnectionFailure(String message);
     public void OnDisconnected();
   }
@@ -165,9 +165,9 @@ public class RemoteControlService extends Service implements PeerDiscoveryInterf
     }
   }
 
-  public void PeerFound(String full_jid) {
+  public void PeerFound(String full_jid, String identity) {
     for (ConnectionHandler handler: connection_handlers_) {
-      handler.OnConnected(full_jid);
+      handler.OnConnected(full_jid, identity);
     }
   }
 }
