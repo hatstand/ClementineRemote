@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -113,11 +114,17 @@ public class NowPlayingActivity extends Activity {
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 	  if (hasFocus && !showing_controls_) {
-	    controls_view_.show(0);
+	    controls_view_.show();
 	    showing_controls_ = true;
 	  } else {
 	    controls_view_.clearFocus();
 	  }
+	}
+	
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+	  controls_view_.show();
+	  return true;
 	}
 	
 	private static class Controls implements MediaPlayerControl {
