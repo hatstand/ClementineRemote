@@ -57,6 +57,8 @@ public class NowPlayingActivity extends Activity {
         }
       });
       
+      RemoteControlInterface iface = service_.GetRemoteControl();
+      iface.QueryState(full_jid_);
     }
 
     public void onServiceDisconnected(ComponentName className) {
