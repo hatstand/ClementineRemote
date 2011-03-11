@@ -12,6 +12,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -47,6 +48,11 @@ public class ClementineRemote extends ListActivity implements AuthTokenReceiver 
   public void onResume() {
     RegisterC2DM();
     super.onResume();
+  }
+  
+  @Override
+  public void onConfigurationChanged(Configuration new_config) {
+    super.onConfigurationChanged(new_config);
   }
 
   

@@ -39,7 +39,7 @@ public class RemoteControlService extends Service implements
   private Context ui_context_;
   private String auth_token_;
   private Account google_account_;
-  private Connection connection_;
+  private Connection connection_ = null;
   private boolean first_connection_attempt_ = true;
 
   private RemoteControlInterface remote_control_ = null;
@@ -86,6 +86,8 @@ public class RemoteControlService extends Service implements
   public void Connect(Context ui_context) {
     ui_context_ = ui_context;
 
+    if (connection_ != null && connection_.IsConnected())
+      return;
     GetAuthToken();
   }
 
@@ -128,7 +130,7 @@ public class RemoteControlService extends Service implements
     connection_ = new Connection();
     connection_.set_username(google_account_.name);
     connection_.set_password(auth_token_);
-    connection_.set_agent_name("Clementine Remote on " + Build.PRODUCT);
+    connection_.set_agent_name("Clementine Remote on " + Build.MODEL);
 
     connection_.SetPeerDiscoveryInterface(this);
 

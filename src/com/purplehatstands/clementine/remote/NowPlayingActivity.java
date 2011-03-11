@@ -177,7 +177,7 @@ public class NowPlayingActivity extends Activity {
 
     public boolean isPlaying() {
       if (current_state_ != null) {
-        return current_state_.playback_state == 2;
+        return current_state_.playback_state == 1;
       }
       return false;
     }
