@@ -16,6 +16,7 @@ import android.widget.MediaController;
 import android.widget.MediaController.MediaPlayerControl;
 import android.widget.TextView;
 
+import com.purplehatstands.libxrme.MediaStorageInterface;
 import com.purplehatstands.libxrme.RemoteControlInterface;
 import com.purplehatstands.libxrme.State;
 
@@ -61,6 +62,8 @@ public class NowPlayingActivity extends Activity {
 
       RemoteControlInterface iface = service_.GetRemoteControl();
       iface.QueryState(full_jid_);
+      MediaStorageInterface media_storage = service_.GetMediaStorage();
+      media_storage.GetArtists(full_jid_);
     }
 
     public void onServiceDisconnected(ComponentName className) {
@@ -72,8 +75,7 @@ public class NowPlayingActivity extends Activity {
     super.onCreate(savedInstanceState);
     InitialiseUI();
 
-    bindService(new Intent(this, RemoteControlService.class), connection_,
-        BIND_AUTO_CREATE);
+    bindService(new Intent(this, RemoteControlService.class), connection_, BIND_AUTO_CREATE);
   }
 
   private void InitialiseUI() {

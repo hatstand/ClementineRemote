@@ -8,6 +8,7 @@ import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPException;
 
 import com.purplehatstands.libxrme.Connection;
+import com.purplehatstands.libxrme.MediaStorageInterface;
 import com.purplehatstands.libxrme.PeerDiscoveryInterface;
 import com.purplehatstands.libxrme.RemoteControlHandler;
 import com.purplehatstands.libxrme.RemoteControlInterface;
@@ -43,6 +44,7 @@ public class RemoteControlService extends Service implements
   private boolean first_connection_attempt_ = true;
 
   private RemoteControlInterface remote_control_ = null;
+  private MediaStorageInterface media_storage_ = null;
 
   private List<ConnectionHandler> connection_handlers_ = new ArrayList<ConnectionHandler>();
   private List<MediaStateHandler> media_state_handlers_ = new ArrayList<MediaStateHandler>();
@@ -70,6 +72,10 @@ public class RemoteControlService extends Service implements
   public RemoteControlInterface GetRemoteControl() {
     return remote_control_;
   }
+  
+  public MediaStorageInterface GetMediaStorage() {
+    return media_storage_;
+  }
 
   public void AddConnectionHandler(ConnectionHandler handler) {
     connection_handlers_.add(handler);
@@ -79,8 +85,15 @@ public class RemoteControlService extends Service implements
     media_state_handlers_.add(handler);
   }
 
+  @Override
   public IBinder onBind(Intent intent) {
     return binder_;
+  }
+  
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    Connect(getApplicationContext());
+    return START_STICKY;
   }
 
   public void Connect(Context ui_context) {
@@ -148,6 +161,11 @@ public class RemoteControlService extends Service implements
       }
     };
     connection_.SetRemoteControl(remote_control_);
+    
+    media_storage_ = new MediaStorageInterface() {
+    };
+    connection_.SetMediaStorage(media_storage_);
+    
 
     try {
       connection_.Connect();

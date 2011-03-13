@@ -85,7 +85,9 @@ public class ClementineRemote extends ListActivity implements AuthTokenReceiver 
           }
         });
         
-        service_.Connect(ClementineRemote.this);
+        Intent intent = new Intent();
+        intent.setClass(getApplicationContext(), RemoteControlService.class);
+        startService(intent);
       }
       
 
