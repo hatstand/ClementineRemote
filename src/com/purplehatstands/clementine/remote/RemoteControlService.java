@@ -7,22 +7,13 @@ import java.util.List;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPException;
 
-import com.purplehatstands.libxrme.Connection;
-import com.purplehatstands.libxrme.PeerDiscoveryInterface;
-import com.purplehatstands.libxrme.RemoteControlHandler;
-import com.purplehatstands.libxrme.RemoteControlInterface;
-import com.purplehatstands.libxrme.State;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
-import android.app.AlertDialog;
 import android.app.Service;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Binder;
@@ -30,13 +21,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
-public class RemoteControlService extends Service implements
-    PeerDiscoveryInterface {
+import com.purplehatstands.libxrme.Connection;
+import com.purplehatstands.libxrme.PeerDiscoveryInterface;
+import com.purplehatstands.libxrme.RemoteControlInterface;
+import com.purplehatstands.libxrme.State;
+
+public class RemoteControlService extends Service implements PeerDiscoveryInterface {
   private static final String TAG = "RemoteControlService";
   private final IBinder binder_ = new LocalBinder();
 
-  private Context ui_context_;
   private String auth_token_;
   private Account google_account_;
   private Connection connection_ = null;
@@ -46,15 +41,17 @@ public class RemoteControlService extends Service implements
 
   private List<ConnectionHandler> connection_handlers_ = new ArrayList<ConnectionHandler>();
   private List<MediaStateHandler> media_state_handlers_ = new ArrayList<MediaStateHandler>();
+  
+  private List<Peer> peers_ = new ArrayList<Peer>();
 
   public class LocalBinder extends Binder {
-    RemoteControlService getService() {
+    public RemoteControlService getService() {
       return RemoteControlService.this;
     }
   }
 
   public interface ConnectionHandler {
-    public void OnConnected(String full_jid, String identity);
+    public void OnConnected(Peer peer);
 
     public void OnConnectionFailure(String message);
 
@@ -80,12 +77,19 @@ public class RemoteControlService extends Service implements
   }
 
   public IBinder onBind(Intent intent) {
+    Log.d(TAG, "onBind Service");
     return binder_;
   }
+  
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    Log.d(TAG, "Starting service");
+    Toast.makeText(getApplicationContext(), "Starting Clementine service", Toast.LENGTH_SHORT);
+    Connect();
+    return START_STICKY;
+  }
 
-  public void Connect(Context ui_context) {
-    ui_context_ = ui_context;
-
+  private void Connect() {
     if (connection_ != null && connection_.IsConnected())
       return;
     GetAuthToken();
@@ -103,9 +107,6 @@ public class RemoteControlService extends Service implements
               if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
                 auth_token_ = bundle.getString(AccountManager.KEY_AUTHTOKEN);
                 StartConnection();
-              } else if (bundle.containsKey(AccountManager.KEY_INTENT)) {
-                Intent intent = (Intent) bundle.get(AccountManager.KEY_INTENT);
-                ui_context_.startActivity(intent);
               }
             } catch (OperationCanceledException e) {
               // TODO Auto-generated catch block
@@ -173,9 +174,14 @@ public class RemoteControlService extends Service implements
     }
   }
 
-  public void PeerFound(String full_jid, String identity) {
+  public void PeerFound(Peer peer) {
     for (ConnectionHandler handler : connection_handlers_) {
-      handler.OnConnected(full_jid, identity);
+      peers_.add(peer);
+      handler.OnConnected(peer);
     }
+  }
+ 
+  public List<Peer> GetPeers() {
+    return peers_;
   }
 }

@@ -1,6 +1,31 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/now_playing_layout" android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/now_playing_layout"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
 	<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/track" android:text="Track" android:textStyle="italic"></TextView>
 	<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/artist" android:text="Artist"></TextView>
 	<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/album" android:text="Album"></TextView>
-	<ImageView android:layout_width="fill_parent" android:layout_height="fill_parent" android:id="@+id/album_cover"></ImageView>	
+	<ImageView android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/album_cover"></ImageView>
+	<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:orientation="horizontal"
+		android:layout_gravity="bottom"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content">
+		<ImageButton android:src="@drawable/media_playback_start"
+			android:id="@+id/play_button"
+			android:layout_centerHorizontal="true"
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"/>
+		<ImageButton android:src="@drawable/media_skip_backward"
+			android:id="@+id/previous_button"
+			android:layout_toLeftOf="@id/play_button"
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"/>
+		<ImageButton android:src="@drawable/media_skip_forward"
+			android:id="@+id/next_button"
+			android:layout_toRightOf="@id/play_button"
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"/>
+	</RelativeLayout>
 </LinearLayout>

@@ -3,6 +3,8 @@ package com.purplehatstands.clementine.remote;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.purplehatstands.libxrme.PeerDiscoveryInterface.Peer;
+
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -24,23 +26,7 @@ import android.widget.Toast;
 public class ClementineRemote extends ListActivity implements AuthTokenReceiver {
   private static final String TAG = "ClementineRemote";
   private RemoteControlService service_;
-  private class Peer {
-    public final String full_jid_;
-    public final String identity_;
-    
-    Peer(String full_jid, String identity) {
-      full_jid_ = full_jid;
-      identity_ = identity;
-    }
-    
-    @Override
-    public String toString() {
-      if (identity_ != null) {
-        return identity_;
-      }
-      return full_jid_  ;
-    }
-  }
+  
   private ArrayAdapter<Peer> peers_ = null;
   private ServiceConnection connection_ = null;
 
@@ -61,6 +47,15 @@ public class ClementineRemote extends ListActivity implements AuthTokenReceiver 
     connection_ = new ServiceConnection() {
       public void onServiceConnected(ComponentName className, IBinder service) {
         service_ = ((RemoteControlService.LocalBinder)service).getService();
+        
+        runOnUiThread(new Runnable() {
+          public void run() {
+            peers_.clear();
+            for (Peer p: service_.GetPeers()) {
+              peers_.add(p);
+            }
+          }
+        });
 
         service_.AddConnectionHandler(new RemoteControlService.ConnectionHandler() {
           public void OnDisconnected() {
@@ -71,23 +66,18 @@ public class ClementineRemote extends ListActivity implements AuthTokenReceiver 
             Toast.makeText(ClementineRemote.this, "Failed to connect to XMPP: " + message, Toast.LENGTH_LONG).show();
           }
           
-          public void OnConnected(final String full_jid, final String identity) {
-            Log.d(TAG, "Adding peer: " + full_jid);
+          public void OnConnected(final Peer peer) {
+            Log.d(TAG, "Adding peer: " + peer.toString());
             Log.d(TAG, "foo");
             
             runOnUiThread(new Runnable() {   
               public void run() {
-                peers_.add(new Peer(full_jid, identity));
+                peers_.add(peer);
               }
             });
-
-
           }
         });
-        
-        service_.Connect(ClementineRemote.this);
       }
-      
 
       public void onServiceDisconnected(ComponentName name) {
         // TODO Auto-generated method stub
@@ -96,6 +86,7 @@ public class ClementineRemote extends ListActivity implements AuthTokenReceiver 
     };
     peers_ = new ArrayAdapter<Peer>(this, android.R.layout.simple_list_item_1);
     bindService(new Intent(this, RemoteControlService.class), connection_, BIND_AUTO_CREATE);
+    startService(new Intent(this, RemoteControlService.class));
     setListAdapter(peers_);
   }
   

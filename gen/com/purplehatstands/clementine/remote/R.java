@@ -12,17 +12,27 @@ public final class R {
     }
     public static final class drawable {
         public static final int icon=0x7f020000;
+        public static final int media_playback_pause=0x7f020001;
+        public static final int media_playback_start=0x7f020002;
+        public static final int media_playback_stop=0x7f020003;
+        public static final int media_skip_backward=0x7f020004;
+        public static final int media_skip_forward=0x7f020005;
+        public static final int nocover=0x7f020006;
     }
     public static final class id {
         public static final int album=0x7f060003;
         public static final int album_cover=0x7f060004;
         public static final int artist=0x7f060002;
+        public static final int next_button=0x7f060007;
         public static final int now_playing_layout=0x7f060000;
-        public static final int remove=0x7f060005;
+        public static final int play_button=0x7f060005;
+        public static final int previous_button=0x7f060006;
+        public static final int remove=0x7f060008;
         public static final int track=0x7f060001;
     }
     public static final class layout {
         public static final int now_playing=0x7f030000;
+        public static final int now_playing_phone=0x7f030001;
     }
     public static final class menu {
         public static final int server_context=0x7f050000;
