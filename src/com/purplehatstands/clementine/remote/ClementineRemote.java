@@ -1,13 +1,7 @@
 package com.purplehatstands.clementine.remote;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.purplehatstands.libxrme.PeerDiscoveryInterface.Peer;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.Activity;
 import android.app.ListActivity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -22,6 +16,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.purplehatstands.libxrme.PeerDiscoveryInterface.Peer;
 
 public class ClementineRemote extends ListActivity implements AuthTokenReceiver {
   private static final String TAG = "ClementineRemote";

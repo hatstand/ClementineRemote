@@ -7,14 +7,6 @@ import java.util.List;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPException;
 
-
-import com.purplehatstands.libxrme.Connection;
-import com.purplehatstands.libxrme.MediaStorageInterface;
-import com.purplehatstands.libxrme.PeerDiscoveryInterface;
-import com.purplehatstands.libxrme.RemoteControlHandler;
-import com.purplehatstands.libxrme.RemoteControlInterface;
-import com.purplehatstands.libxrme.State;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
@@ -33,6 +25,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.purplehatstands.libxrme.Connection;
+import com.purplehatstands.libxrme.MediaStorageInterface;
 import com.purplehatstands.libxrme.PeerDiscoveryInterface;
 import com.purplehatstands.libxrme.RemoteControlInterface;
 import com.purplehatstands.libxrme.State;

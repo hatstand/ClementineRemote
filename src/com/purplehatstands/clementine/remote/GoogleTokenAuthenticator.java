@@ -7,7 +7,6 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.sasl.SASLMechanism;
 
 import android.util.Base64;
-import android.util.Log;
 
 public class GoogleTokenAuthenticator extends SASLMechanism {
   private static final String TAG = "GoogleTokenAuthenticator";
